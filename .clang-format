@@ -1,0 +1,10 @@
+BasedOnStyle: LLVM
+IndentWidth: 8
+UseTab: Always
+BreakBeforeBraces: Linux
+AlwaysBreakAfterReturnType: All
+AllowShortFunctionsOnASingleLine: None
+ColumnLimit: 120
+TabWidth: 8
+ContinuationIndentWidth: 8
+
