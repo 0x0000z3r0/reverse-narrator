@@ -4,4 +4,4 @@ This unique Capture The Flag (CTF) challenge combines the thrill of exploits and
 
 The CTF features cleverly designed puzzles that require analyzing vulnerabilities, exploiting software weaknesses, and reversing mysterious binary segments (called levels or chapters). Each solved challenge unlocks part of the story and brings you closer to breaking the nightmare’s grip.
 
-![](./images/1.png)
+![](assets/background.png)

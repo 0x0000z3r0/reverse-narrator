@@ -13,7 +13,7 @@ cmp_file_paths(const void *a, const void *b)
 int
 main(void)
 {
-	const int screen_width = 800;
+	const int screen_width = 900;
 	const int screen_height = 450;
 
 	InitWindow(screen_width, screen_height, "Reverse Narrator");
@@ -29,10 +29,10 @@ main(void)
 	qsort(chapter0_files.paths, chapter0_files.count, sizeof(char *), cmp_file_paths);
 
 	struct chapter_context {
-		Texture2D slides[20];
-		float slides_alpha[20];
-		Vector2 slides_postions[20];
-		float slides_scale[20];
+		Texture2D slides[6];
+		float slides_alpha[6];
+		Vector2 slides_postions[6];
+		float slides_scale[6];
 		int slides_count;
 	};
 
@@ -42,21 +42,24 @@ main(void)
 	for (int i = 0; i < chapter0_context.slides_count; ++i) {
 		chapter0_context.slides[i] = LoadTexture(chapter0_files.paths[i]);
 	}
-	chapter0_context.slides_postions[0].x = 0.0f;
-	chapter0_context.slides_postions[0].y = 0.0f;
-	chapter0_context.slides_scale[0] = 0.3f;
-	chapter0_context.slides_postions[1].x = 350.0f;
-	chapter0_context.slides_postions[1].y = 0.0f;
-	chapter0_context.slides_scale[1] = 0.3f;
-	chapter0_context.slides_postions[2].x = 0.0f;
-	chapter0_context.slides_postions[2].y = 0.0f;
-	chapter0_context.slides_scale[2] = 0.3f;
-	chapter0_context.slides_postions[3].x = 350.0f;
-	chapter0_context.slides_postions[3].y = 0.0f;
-	chapter0_context.slides_scale[3] = 0.3f;
-	chapter0_context.slides_postions[4].x = 0.0f;
-	chapter0_context.slides_postions[4].y = 0.0f;
-	chapter0_context.slides_scale[4] = 0.3f;
+	chapter0_context.slides_postions[0].x = 5.0f;
+	chapter0_context.slides_postions[0].y = 10.0f;
+	chapter0_context.slides_scale[0] = 0.285f;
+	chapter0_context.slides_postions[1].x = 300.0f;
+	chapter0_context.slides_postions[1].y = 10.0f;
+	chapter0_context.slides_scale[1] = 0.285f;
+	chapter0_context.slides_postions[2].x = 600.0f;
+	chapter0_context.slides_postions[2].y = 10.0f;
+	chapter0_context.slides_scale[2] = 0.285f;
+	chapter0_context.slides_postions[3].x = 5.0f;
+	chapter0_context.slides_postions[3].y = 10.0f;
+	chapter0_context.slides_scale[3] = 0.285f;
+	chapter0_context.slides_postions[4].x = 300.0f;
+	chapter0_context.slides_postions[4].y = 10.0f;
+	chapter0_context.slides_scale[4] = 0.285f;
+	chapter0_context.slides_postions[5].x = 600.0f;
+	chapter0_context.slides_postions[5].y = 10.0f;
+	chapter0_context.slides_scale[5] = 0.285f;
 
 	UnloadDirectoryFiles(chapter0_files);
 
@@ -68,7 +71,7 @@ main(void)
 
 	while (!WindowShouldClose()) {
 		if (slide_alpha != NULL) {
-			*slide_alpha += 0.5f * GetFrameTime();
+			*slide_alpha += 0.35f * GetFrameTime();
 			if (*slide_alpha > 1.0f)
 				*slide_alpha = 1.0f;
 		}
