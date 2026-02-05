@@ -1,4 +1,14 @@
 #include <raylib.h>
+#include <stdlib.h>
+#include <string.h>
+
+static int
+cmp_file_paths(const void *a, const void *b)
+{
+	const char *path_a = *(const char **)a;
+	const char *path_b = *(const char **)b;
+	return strcmp(path_a, path_b);
+}
 
 int
 main(void)
@@ -9,25 +19,59 @@ main(void)
 	InitWindow(screen_width, screen_height, "Reverse Narrator");
 	SetTargetFPS(20);
 
-	Texture2D screen_background = LoadTexture("images/1.png");
+	Texture2D screen_background = LoadTexture("assets/background.png");
 
 	enum { CHAPTER_MENU, CHAPTER_0, CHAPTER_1, CHAPTER_MAX };
-	const char *chapter_text[CHAPTER_MAX] = {"chapter 0", "chapter 1"};
+	const char *chapter_text[CHAPTER_MAX] = {"", "chapter 0", "chapter 1"};
 	int chapter_selection = CHAPTER_MENU;
 
-	Texture2D chapter0_slide0 = LoadTexture("images/2.png");
-	Texture2D chapter0_slide1 = LoadTexture("images/3.png");
+	FilePathList chapter0_files = LoadDirectoryFilesEx("assets/chapter0", ".png", false);
+	qsort(chapter0_files.paths, chapter0_files.count, sizeof(char *), cmp_file_paths);
 
-	float slide_alpha = 0.0f;
+	struct chapter_context {
+		Texture2D slides[20];
+		float slides_alpha[20];
+		Vector2 slides_postions[20];
+		float slides_scale[20];
+		int slides_count;
+	};
+
+	struct chapter_context chapter0_context;
+	memset(&chapter0_context, 0, sizeof(chapter0_context));
+	chapter0_context.slides_count = chapter0_files.count;
+	for (int i = 0; i < chapter0_context.slides_count; ++i) {
+		chapter0_context.slides[i] = LoadTexture(chapter0_files.paths[i]);
+	}
+	chapter0_context.slides_postions[0].x = 0.0f;
+	chapter0_context.slides_postions[0].y = 0.0f;
+	chapter0_context.slides_scale[0] = 0.3f;
+	chapter0_context.slides_postions[1].x = 350.0f;
+	chapter0_context.slides_postions[1].y = 0.0f;
+	chapter0_context.slides_scale[1] = 0.3f;
+	chapter0_context.slides_postions[2].x = 0.0f;
+	chapter0_context.slides_postions[2].y = 0.0f;
+	chapter0_context.slides_scale[2] = 0.3f;
+	chapter0_context.slides_postions[3].x = 350.0f;
+	chapter0_context.slides_postions[3].y = 0.0f;
+	chapter0_context.slides_scale[3] = 0.3f;
+	chapter0_context.slides_postions[4].x = 0.0f;
+	chapter0_context.slides_postions[4].y = 0.0f;
+	chapter0_context.slides_scale[4] = 0.3f;
+
+	UnloadDirectoryFiles(chapter0_files);
+
+	float *slide_alpha = NULL;
 
 	enum { MENU_START, MENU_EXIT, MENU_MAX };
 	const char *menu_options[MENU_MAX] = {"start", "exit"};
 	int menu_selection = MENU_START;
 
 	while (!WindowShouldClose()) {
-		slide_alpha += 0.1f * GetFrameTime();
-		if (slide_alpha > 1.0f)
-			slide_alpha = 1.0f;
+		if (slide_alpha != NULL) {
+			*slide_alpha += 0.5f * GetFrameTime();
+			if (*slide_alpha > 1.0f)
+				*slide_alpha = 1.0f;
+		}
 
 		if (IsKeyPressed(KEY_DOWN)) {
 			menu_selection++;
@@ -43,13 +87,22 @@ main(void)
 			}
 		}
 
-		if (IsKeyPressed(KEY_ESCAPE)) {
+		if (IsKeyPressed(KEY_M)) {
 			chapter_selection = CHAPTER_MENU;
+		}
+
+		if (IsKeyPressed(KEY_S)) {
+			if (slide_alpha != NULL) {
+				*slide_alpha = 1.0f;
+			}
 		}
 
 		if (IsKeyPressed(KEY_ENTER)) {
 			switch (menu_selection) {
 			case MENU_START:
+				if (slide_alpha != NULL) {
+					*slide_alpha = 0.0f;
+				}
 				chapter_selection = CHAPTER_0;
 				break;
 			case MENU_EXIT:
@@ -73,12 +126,29 @@ main(void)
 				DrawTextEx(GetFontDefault(), menu_options[i], (Vector2){380, 100 + 30 * i}, font_size,
 					   10, WHITE);
 			}
+			const int hint_offset = 410;
+			DrawTextEx(GetFontDefault(), "[M] go to menu", (Vector2){310, hint_offset}, 10, 5, WHITE);
+			DrawTextEx(GetFontDefault(), "[S] skip the animation", (Vector2){310, hint_offset + 10}, 10, 5,
+				   WHITE);
+			DrawTextEx(GetFontDefault(), "[Esc] exit the game", (Vector2){310, hint_offset + 20}, 10, 5,
+				   WHITE);
 			break;
 		}
 		case CHAPTER_0: {
+			if (slide_alpha == NULL) {
+				slide_alpha = &chapter0_context.slides_alpha[0];
+			} else if (*slide_alpha >= 1.0f) {
+				if (slide_alpha <= &chapter0_context.slides_alpha[chapter0_context.slides_count - 1]) {
+					++slide_alpha;
+				}
+			}
 			DrawTextEx(GetFontDefault(), chapter_text[CHAPTER_0], (Vector2){20, 20}, 20, 10, WHITE);
-			DrawTextureEx(chapter0_slide0, (Vector2){0, 0}, 0, 0.3, Fade(WHITE, slide_alpha));
-			DrawTextureEx(chapter0_slide1, (Vector2){400, 0}, 0, 0.3, Fade(WHITE, slide_alpha));
+			for (int i = 0; i < chapter0_files.count; ++i) {
+				DrawTextureEx(chapter0_context.slides[i], chapter0_context.slides_postions[i], 0,
+					      chapter0_context.slides_scale[i],
+					      Fade(WHITE, chapter0_context.slides_alpha[i]));
+			}
+
 			break;
 		}
 		default:
@@ -88,8 +158,9 @@ main(void)
 	}
 
 _EXIT:
-	UnloadTexture(chapter0_slide0);
-	UnloadTexture(chapter0_slide1);
+	for (int i = 0; i < chapter0_files.count; ++i) {
+		UnloadTexture(chapter0_context.slides[i]);
+	}
 	UnloadTexture(screen_background);
 	CloseWindow();
 
